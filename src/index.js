@@ -1,12 +1,36 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import * as serviceWorker from './serviceWorker';
+import SeasonDisplay from './SeasonDisplay';
+import Spinner from './Spinner';
 
-ReactDOM.render(<App />, document.getElementById('root'));
+class App extends React.Component {
+	state = { lat: null, load: true, error: false, errMessage: '' };
 
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://bit.ly/CRA-PWA
-serviceWorker.unregister();
+	componentDidMount() {
+		window.navigator.geolocation.getCurrentPosition(
+			position =>
+				this.setState({ lat: position.coords.latitude, load: false }),
+			err =>
+				this.setState({ error: true, errMessage: err.message, load: false })
+		);
+	}
+
+	// React says we have to define render!!
+	render() {
+		const { load, lat, error, errMessage } = this.state;
+		return (
+			<div>
+				{load && <Spinner message='Please accept location request' />}
+				{!load && !error && <SeasonDisplay lat={lat} />}
+				{!load && error && (
+					<div>
+						<i className='times circle icon' />
+						Error: {errMessage}
+					</div>
+				)}
+			</div>
+		);
+	}
+}
+
+ReactDOM.render(<App />, document.querySelector('#root'));
